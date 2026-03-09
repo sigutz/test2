@@ -1,0 +1,43 @@
+name: Continuous Integration
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  integration-test:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Start Full Stack with Docker Compose
+      run: |
+        # Boot up the database, backend, and frontend in the background
+        docker compose up -d --build
+        
+        # Wait a moment for Prisma to push the schema and the Node server to start
+        echo "Waiting 15 seconds for containers to initialize..."
+        sleep 15
+        
+        # Check if the containers are actually running or if they crashed
+        docker ps
+        docker compose logs backend
+
+    - name: Install Test Dependencies
+      run: |
+        cd backend
+        npm install ts-node typescript @types/node
+
+    - name: Run API Integration Test
+      run: |
+        cd backend
+        # This will call the API which will fetch from the real Postgres database
+        npm run test:ci
+
+    - name: Shut down Docker
+      if: always() # Run this even if the tests fail
+      run: docker compose down
