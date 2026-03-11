@@ -14,11 +14,15 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v4
 
+    - name: Create Dummy .env for Prisma
+      run: |
+        # Create a .env file in the backend directory so Prisma can read it during the build
+        echo 'DATABASE_URL="postgresql://dummy:dummy@localhost:5432/dummy"' > backend/.env
+
     - name: Start Full Stack with Docker Compose
       run: |
         # Boot up the database, backend, and frontend in the background
-        # We pass a dummy DATABASE_URL here so Prisma can successfully generate the client during the Docker build phase.
-        DATABASE_URL="postgresql://dummy:dummy@localhost:5432/dummy" docker compose up -d --build
+        docker compose up -d --build
         
         # Wait a moment for Prisma to push the schema and the Node server to start
         echo "Waiting 15 seconds for containers to initialize..."
