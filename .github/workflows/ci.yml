@@ -32,6 +32,11 @@ jobs:
         docker ps
         docker compose logs backend
 
+    - name: Fix File Permissions
+      run: |
+        # Give ownership of the files created by Docker back to the GitHub runner user
+        sudo chown -R $USER:$USER .
+
     - name: Install Test Dependencies
       run: |
         cd backend
