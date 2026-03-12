@@ -17,20 +17,24 @@ jobs:
           username: ${{ secrets.SERVER_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
-            # Define where the project should live on your server
-            PROJECT_DIR="~/test2"
+            # Exit immediately if any command fails
+            set -e 
+            
+            # Use $HOME instead of ~ for safer variable expansion
+            PROJECT_DIR="$HOME/test2"
             
             # Check if the project folder exists. If not, clone the repo.
             if [ ! -d "$PROJECT_DIR" ]; then
-              git clone https://github.com/sigutz/test2.git $PROJECT_DIR
+              git clone https://github.com/sigutz/test2.git "$PROJECT_DIR"
             fi
             
-            cd $PROJECT_DIR
+            cd "$PROJECT_DIR"
             
-            git pull origin main
+            # Fetch the latest changes and FORCE the local branch to match GitHub perfectly
+            git fetch origin main
+            git reset --hard origin/main
             
             # Rebuild and restart the Docker containers
-
             docker compose down
             docker compose up -d --build
             
